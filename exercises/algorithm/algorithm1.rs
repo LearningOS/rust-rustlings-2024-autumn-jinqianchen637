@@ -2,11 +2,12 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+// I AM DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
+use std::cmp::PartialOrd;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -29,13 +30,17 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T> Default for LinkedList<T> 
+    where T: std::cmp::PartialOrd + Clone
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T> LinkedList<T> 
+    where T: std::cmp::PartialOrd + Clone
+{
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -56,11 +61,11 @@ impl<T> LinkedList<T> {
         self.length += 1;
     }
 
-    pub fn get(&mut self, index: i32) -> Option<&T> {
+    pub fn get(&self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
 
-    fn get_ith_node(&mut self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
+    fn get_ith_node(&self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
         match node {
             None => None,
             Some(next_ptr) => match index {
@@ -69,15 +74,40 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    pub fn merge(list_a:LinkedList<T>, list_b:LinkedList<T>) -> Self {
+        let mut rlt = LinkedList::new();
+        let mut op_node_a = list_a.start;
+        let mut op_node_b = list_b.start;
+        while !(op_node_a.is_none() && op_node_b.is_none()) {
+            if Self::use_first(op_node_a, op_node_b) {
+                unsafe {
+                    let node_a = op_node_a.unwrap();
+                    let val_a = (*node_a.as_ptr()).val.clone();
+                    rlt.add(val_a);
+                    op_node_a = (*node_a.as_ptr()).next;
+                }
+            } else {
+                unsafe {
+                    let node_b = op_node_b.unwrap();
+                    let val_b = (*node_b.as_ptr()).val.clone();
+                    rlt.add(val_b);
+                    op_node_b = (*node_b.as_ptr()).next;
+                }
+            }
         }
-	}
+        rlt
+    }
+
+    fn use_first(a: Option<NonNull<Node<T>>>, b: Option<NonNull<Node<T>>>) -> bool {
+        match (a, b){
+            (None, None) | (None, Some(_)) => false,
+            (Some(_), None) => true,
+            (Some(a), Some(b)) => {
+                unsafe { (*a.as_ptr()).val < (*b.as_ptr()).val }
+            }
+        }
+    }
 }
 
 impl<T> Display for LinkedList<T>

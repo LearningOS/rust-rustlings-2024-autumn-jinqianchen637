@@ -3,7 +3,10 @@
 	This question requires you to use a stack to achieve a bracket match
 */
 
-// I AM NOT DONE
+// I AM DONE
+
+use std::cell::RefCell;
+
 #[derive(Debug)]
 struct Stack<T> {
 	size: usize,
@@ -31,8 +34,14 @@ impl<T> Stack<T> {
 		self.size += 1;
 	}
 	fn pop(&mut self) -> Option<T> {
-		// TODO
-		None
+		let rlt = self.data.pop();
+		match rlt {
+			None => None,
+			_ => {
+				self.size -= 1;
+				rlt
+			}
+		}
 	}
 	fn peek(&self) -> Option<&T> {
 		if 0 == self.size {
@@ -99,11 +108,90 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 	}
 }
 
-fn bracket_match(bracket: &str) -> bool
-{
-	//TODO
-	true
+fn pare(c: char) -> Option<char> {
+	match c {
+		'(' => Some(')'),
+		'[' => Some(']'),
+		'{' => Some('}'),
+		')' => Some('('),
+		']' => Some('['),
+		'}' => Some('{'),
+		c => None
+	}
 }
+
+fn bracket_match(bracket: &str) -> bool {
+	let mut rc_stack = RefCell::new(Stack::new());
+	bracket.chars().fold(
+		true, |x, c|{
+			if !x {
+				false
+			}else{
+				match c {
+					c if c == '(' || c == '[' || c == '{'  => {
+						rc_stack.borrow_mut().push(c);
+						x
+					},
+					c if c == ')' || c == ']' || c == '}' => {
+						match rc_stack.borrow_mut().pop(){
+							None => {false},
+							Some(cp) => {
+								match pare(cp){
+									None => { false },
+									Some(c_p) => { c_p == c }
+								}
+							}
+						}
+					},
+					_c => { x },
+				}
+			}
+		}) 
+		&& rc_stack.borrow_mut().is_empty()
+}
+
+// fn bracket_match_2(bracket: &str) -> bool
+// {
+// 	//TODO, how to do it with fold?
+// 	let mut s = Stack::new();
+// 	let sref = &mut s;
+// 	let mut rlt = true;
+// 	for c in bracket.chars() {
+// 		println!("# c {}",c);
+// 		if !rlt { return false };
+// 		rlt = {
+// 				match c {
+// 					c if c == '(' || c == '[' || c == '{' => {
+// 						sref.push(c);
+// 						println!("# push {}",c);
+// 						rlt
+// 					},
+// 					c if c == ')' || c == ']' || c == '}' => {
+// 						match sref.pop() {
+// 							None => { false }
+// 							Some(s) => {
+// 								println!("# pop {}", s);
+// 								match pare(c){
+// 									None => false,
+// 									Some(c_p) => {
+// 										if c_p == s {
+// 											true
+// 										} else {
+// 											false
+// 										}
+// 									}
+// 								}
+// 							}
+// 						}
+// 					},
+// 					_ => { 
+// 						rlt
+// 					}
+// 				}
+// 			}
+// 	}
+// 	rlt && sref.is_empty()
+// }
 
 #[cfg(test)]
 mod tests {

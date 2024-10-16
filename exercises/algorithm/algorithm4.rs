@@ -3,7 +3,7 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
+//I AM DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -51,12 +51,25 @@ where
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
         //TODO
+        match &mut self.root {
+            None => {
+                self.root = Some(Box::new(TreeNode::new(value)))
+            },
+            Some(ref mut root) => {
+                root.insert(value)
+            }
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
         //TODO
-        true
+        match &self.root {
+            None => false,
+            Some(root) => {
+                root.search(value)
+            }
+        }
     }
 }
 
@@ -67,7 +80,66 @@ where
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
         //TODO
+        match &self.value {
+            val_slf if *val_slf == value => {},
+            val_slf if *val_slf < value => {
+                match &mut self.right {
+                    None => {
+                        self.right = Some(Box::new(TreeNode::new(value)));
+                    },
+                    Some(ref mut right) => {
+                        right.insert(value);
+                    }
+                }
+            }, 
+            val_slf => {
+                match &mut self.left {
+                    None => {
+                        self.left = Some(Box::new(TreeNode::new(value)));
+                    },
+                    Some(left) => {
+                        left.insert(value);
+                    }
+                }
+            }
+        };
     }
+
+    fn search_bak(&self, value: T) -> bool {
+        match &self.value {
+            x if *x == value => { return true; },
+            x if *x > value => { 
+                match &self.left {
+                    None => false,
+                    Some(left) => {
+                        left.search(value)
+                    }
+                }
+            },
+            x => {
+                match &self.right {
+                    None => false,
+                    Some(right) => {
+                        right.search(value)
+                    }
+                }
+            }
+        }
+    }
+
+    fn search(&self, value: T) -> bool {
+        match (&self.value, &self.left, &self.right) {
+            (root_val, _, _) if *root_val == value => { true },
+            (root_val, Some(left), _) if value < *root_val => { 
+                left.search(value)
+            },
+            (root_val, _, Some(right)) if *root_val < value => {
+                right.search(value)
+            },
+            (_,_,_) => false
+        }
+    }
+
 }
 
 

@@ -2,7 +2,7 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+// I AM DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +37,24 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        self.items.push(value);
+        let mut new_idx = self.count;
+        let mut parent_idx = self.parent_idx(new_idx);
+        let mut flag_finish = false;
+        while parent_idx > 0 && !flag_finish {
+            let par_value = self.items.get(parent_idx).unwrap();
+            let new_val = self.items.get(new_idx).unwrap();
+            if (self.comparator)(new_val, par_value){
+                let tmp_val = &mut T::default();
+                std::mem::swap(&mut self.items[parent_idx], tmp_val);
+                std::mem::swap(&mut self.items[new_idx], tmp_val);
+                std::mem::swap(&mut self.items[parent_idx], tmp_val);
+                (new_idx, parent_idx) = (parent_idx, self.parent_idx(parent_idx));
+            }else{
+                flag_finish = true
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -85,7 +102,70 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        match self.len(){
+            0 => None,
+            1 => {
+                self.count -= 1;
+                self.items.pop()
+            },
+            n => {
+                self.count -= 1;
+                let mut rlt = T::default();
+                let rlt_val = &mut rlt;
+                std::mem::swap(&mut self.items[1], rlt_val);
+                let mut tmp_val = self.items.pop().unwrap();
+                let mut flag_finish = false;
+                let mut par_idx = 1_usize;
+                std::mem::swap(&mut self.items[par_idx], &mut tmp_val);
+                while !flag_finish {
+                    let par_val = self.items.get(par_idx).unwrap();
+                    let left_child_idx = self.left_child_idx(par_idx);
+                    let right_child_idx = self.right_child_idx(par_idx);
+                    match self.items.get(left_child_idx){
+                        None => {
+                            flag_finish = true;
+                        },
+                        Some(left_val) => {
+                            match self.items.get(right_child_idx){
+                                None => {
+                                    if (self.comparator)(par_val, left_val){
+                                        flag_finish = true;
+                                    }else{
+                                        std::mem::swap(&mut self.items[left_child_idx], &mut tmp_val);
+                                        std::mem::swap(&mut self.items[par_idx], &mut tmp_val);
+                                        std::mem::swap(&mut self.items[left_child_idx], &mut tmp_val);
+                                        par_idx = left_child_idx;
+                                    }
+                                },
+                                Some(right_val) => {
+                                    if (self.comparator)(left_val, right_val){
+                                        if (self.comparator)(par_val, left_val){
+                                            flag_finish = true;
+                                        }else{
+                                            std::mem::swap(&mut self.items[left_child_idx], &mut tmp_val);
+                                            std::mem::swap(&mut self.items[par_idx], &mut tmp_val);
+                                            std::mem::swap(&mut self.items[left_child_idx], &mut tmp_val);
+                                            par_idx = left_child_idx;
+                                        }
+                                    }else{
+                                        if (self.comparator)(par_val, right_val){
+                                            flag_finish = true;
+                                        }else{
+                                            std::mem::swap(&mut self.items[right_child_idx], &mut tmp_val);
+                                            std::mem::swap(&mut self.items[par_idx], &mut tmp_val);
+                                            std::mem::swap(&mut self.items[right_child_idx], &mut tmp_val);
+                                            par_idx = right_child_idx;
+                                        }
+                                    }       
+                                }
+                            }
+                        }
+                    }
+                }
+                Some(rlt)
+            }
+        }
+        
     }
 }
 

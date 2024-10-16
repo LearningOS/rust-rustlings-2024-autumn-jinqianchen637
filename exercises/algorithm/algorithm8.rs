@@ -2,7 +2,7 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
+// I AM DONE
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -52,32 +52,162 @@ impl<T> Default for Queue<T> {
     }
 }
 
+// pub struct myStack<T>
+// {
+// 	//TODO
+//     use_q1: bool,
+// 	q1:Queue<T>,
+// 	q2:Queue<T>
+// }
+// impl<T> myStack<T> {
+//     pub fn new() -> Self {
+//         Self {
+// 			//TODO
+//             use_q1: true,
+// 			q1:Queue::<T>::new(),
+// 			q2:Queue::<T>::new()
+//         }
+//     }
+//     pub fn push(&mut self, elem: T) {
+//         //TODO
+//         if self.use_q1 {
+//             self.q1.enqueue(elem)
+//         } else {
+//             self.q2.enqueue(elem)
+//         }
+//     }
+//     pub fn pop(&mut self) -> Result<T, &str> {
+//         //TODO
+//         if self.use_q1 {
+//             match self.q1.size(){
+//                 1 => return self.q1.dequeue(),
+//                 0 => {
+//                     match self.q2.size(){
+//                         0 => {return Err("Stack is empty")},
+//                         1 => {
+//                             return Ok(self.q2.dequeue().unwrap())
+//                         },
+//                         n => {
+//                             self.use_q1 = false;
+//                             for _ in 1..=(n-1) {
+//                                 self.q1.enqueue(self.q2.dequeue().unwrap());
+//                             }
+//                             return Ok(self.q2.dequeue().unwrap());
+//                         }
+//                     }
+//                 },
+//                 n => {
+//                     for _ in 1..=(n-1) {
+//                         self.q2.enqueue(self.q1.dequeue().unwrap());
+//                     }
+//                     self.use_q1 = true;
+//                     return Ok(self.q1.dequeue().unwrap());
+//                 }
+//             }
+//         } else {
+//             match self.q2.size(){
+//                 1 => return self.q2.dequeue(),
+//                 0 => {
+//                     match self.q1.size(){
+//                         0 => {return Err("Stack is empty")},
+//                         1 => {
+//                             return Ok(self.q1.dequeue().unwrap())
+//                         },
+//                         n => {
+//                             self.use_q1 = true;
+//                             for _ in 1..=(n-1) {
+//                                 self.q2.enqueue(self.q1.dequeue().unwrap());
+//                             }
+//                             return Ok(self.q1.dequeue().unwrap());
+//                         }
+//                     }
+//                 },
+//                 n => {
+//                     for _ in 1..=(n-1) {
+//                         self.q1.enqueue(self.q2.dequeue().unwrap());
+//                     }
+//                     self.use_q1 = true;
+//                     return Ok(self.q2.dequeue().unwrap());
+//                 }
+//             }
+//         }
+//     }
+//     pub fn is_empty(&self) -> bool {
+// 		//TODO
+//         self.q1.is_empty() && self.q2.is_empty()
+//     }
+// }
+
+
 pub struct myStack<T>
 {
 	//TODO
+    cur_queue: u8,
 	q1:Queue<T>,
 	q2:Queue<T>
 }
+
 impl<T> myStack<T> {
     pub fn new() -> Self {
         Self {
-			//TODO
+            cur_queue: 0,
 			q1:Queue::<T>::new(),
 			q2:Queue::<T>::new()
         }
     }
+
     pub fn push(&mut self, elem: T) {
-        //TODO
+        if self.cur_queue == 0 {
+            self.q1.enqueue(elem);
+        } else {
+            self.q2.enqueue(elem);
+        }
     }
+
     pub fn pop(&mut self) -> Result<T, &str> {
-        //TODO
-		Err("Stack is empty")
+        if self.cur_queue == 0 {
+            while true {
+                match self.q1.dequeue(){
+                    Ok(n) => {
+                        if self.q1.is_empty(){
+                            self.cur_queue = 1;
+                            return Ok(n)
+                        } else {
+                            {
+                                self.q2.enqueue(n)
+                            }
+                        }
+                    },
+                    _ => {
+                        return Err("Stack is empty")
+                    }
+                }
+            }
+            Err("Stack is Empty")
+        } else {
+            while true {
+                match self.q2.dequeue(){
+                    Ok(n) => {
+                        if self.q2.is_empty(){
+                            self.cur_queue = 0;
+                            return Ok(n)
+                        } else {
+                            self.q1.enqueue(n)
+                        }
+                    },
+                    _ => { return Err("Stack is empty")}
+                }
+            }
+            Err("Stack is Empty")
+        }
     }
+
     pub fn is_empty(&self) -> bool {
-		//TODO
-        true
+        self.q1.is_empty() && self.q2.is_empty()
     }
+
 }
+
 
 #[cfg(test)]
 mod tests {
